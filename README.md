@@ -8,6 +8,7 @@ If you found any mistakes in the solutions, please create an issue or contact me
 ## Environment Setup
 
 * This repository was tested with Python 3.9, Windows 10.
+* [OpenAI Gym Toolkit](https://gym.openai.com/) is required to run the simulations.
 
 ## License
 
