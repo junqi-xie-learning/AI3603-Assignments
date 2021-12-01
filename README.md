@@ -8,7 +8,7 @@ If you found any mistakes in the solutions, please create an issue or contact me
 ## Environment Setup
 
 * This repository was tested with Python 3.9, Windows 10.
-* The robot simulator [CoppeliaSim](https://www.coppeliarobotics.com/) is required to run the simulations for Homework 1.
+* The robot simulator [CoppeliaSim](https://www.coppeliarobotics.com/) is required to run the simulations for Homework 1 & 3.
 * [OpenAI Gym Toolkit](https://gym.openai.com/) is required to run the simulations for Homework 2.
 
 ## License
