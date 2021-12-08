@@ -19,6 +19,17 @@ np.random.seed(seed)
 #  Estimation parameter of PF, you may use them in the PF algorithm. You can use the recommended values as follows.
 Q = np.diag([0.15]) ** 2  # range error
 R = np.diag([0.1, np.deg2rad(10)]) ** 2  # input error
+ERROR = 0.05  # Randomness
+
+def calc_lidar_points(x, y, yaw, data):
+    """
+    Calculate libar points based on lidar outputs
+    """
+    targets = []
+    for i in range(pts):
+        angle = yaw + (i - pts // 2) * pi / 4
+        targets.append([x + data[i] * cos(angle), y + data[i] * sin(angle)])
+    return targets
 
 ###  END CODE HERE  ###
 
@@ -164,19 +175,25 @@ def pf_localization(px, pw, data, u):
 
     for ip in range(NP):
         #  Prediction step: Predict with random input sampling
-        pass
+        px[:, ip] = motion_model(px[:, ip].reshape((3, 1)), u).flatten()
 
         #  Update steps: Calculate importance weight
-        pass
+        x, y, yaw = px[:, ip]
+        weight = 0
+        points = calc_lidar_points(x, y, yaw, data)
+        for point in points:
+            distance = map(lambda x: math.dist(point, x), room)
+            weight += min(distance) ** 2
+        pw[:, ip] = 1 / weight
 
     pw = pw / pw.sum()  # normalize
     x_est = px.dot(pw.T)
 
     # Resample step: Resample the particles.
-    pass
+    px, pw = re_sampling(px, pw)
 
     ###  END CODE HERE  ###
-    print("The time used for each iteration:", time.time()-t1, " s")
+    print("The time used for each iteration:", time.time() - t1, " s")
     return x_est, px, pw
 
 
@@ -193,7 +210,13 @@ def re_sampling(px, pw):
     pw -- The weight of all particles after resampling.
     """
     ### START CODE HERE ###
-
+    particles = np.random.choice(NP, NP, True, pw[0])
+    px_sampled = np.zeros((3, NP))
+    for ip in range(NP):
+        px_sampled[:, ip] = px[:, particles[ip]]
+        px_sampled[:, ip] += (np.random.random_sample(3) - 0.5) * ERROR
+    px = px_sampled
+    pw[0] = np.ones(NP) / NP
     ###  END CODE HERE  ###
     return px, pw
 
@@ -245,6 +268,13 @@ if __name__ == '__main__':
             plt.scatter(x, y)
             plt.plot(np.array(h_x_true[0, :]).flatten(),
                      np.array(h_x_true[1, :]).flatten(), "-b")
+            plt.plot(np.array(h_x_est[0, :]).flatten(),
+                     np.array(h_x_est[1, :]).flatten(), "-r")
+
+            # Plot lidar targets
+            targets = calc_lidar_points(pos[0], pos[1], ori, data)
+            for target in targets:
+                plt.plot([pos[0], target[0]], [pos[1], target[1]], color="orange")
 
             # Plot the particles
             plt.scatter(px[0, :], px[1, :], color='g', s=5)
